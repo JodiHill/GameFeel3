@@ -16,6 +16,12 @@ public class PlayerMovement : MonoBehaviour
     private float chargingTime;
     private float chargingPower = 32f;
 
+    private float coyoteTime = 0.2f;
+    private float coyoteTimecounter;
+
+    private float jumpBufferTime = 0.2f;
+    private float jumpBufferCounter;
+
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
@@ -29,11 +35,33 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         horizontal = Input.GetAxisRaw("Horizontal");
+
+        if (IsGrounded())
+        {
+            coyoteTimecounter = coyoteTime;
+        }
+        else
+        {
+            coyoteTimecounter -= Time.deltaTime;
+        }
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            jumpBufferCounter = jumpBufferTime;
+        }
+        else
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
         anim.SetFloat("Walking", Mathf.Abs(horizontal));
 
-        if (Input.GetButtonDown("Jump") && IsGrounded())
+        if (jumpBufferCounter > 0f && coyoteTimecounter > 0f)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+
+            jumpBufferCounter = 0f;
+
             anim.SetTrigger("Jumping");
             inAir = true;
         }
@@ -52,6 +80,8 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetButtonUp ("Jump") && rb.velocity.y > 0f)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
+
+            coyoteTimecounter = 0f;
         }
 
         Flip();
@@ -68,7 +98,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.LeftControl))
         {
-            if (chargingTime > 5)
+            if (chargingTime > 2)
             {
                 rb.velocity = new Vector2(rb.velocity.x, chargingPower);
                 anim.SetTrigger("Jumping");
