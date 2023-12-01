@@ -36,6 +36,7 @@ public class PlayerMovement : MonoBehaviour
 
     public GameObject canvas, canvasparticle;
     public RawImage loader;
+    public AudioSource audioSource, dead;
     private Vector3 spawnPosition;
 
     private void Start()
@@ -79,6 +80,8 @@ public class PlayerMovement : MonoBehaviour
             jumpps.Stop();
             jumpps.Play();
             anim.SetTrigger("Jumping");
+            audioSource.Stop();
+            audioSource.Play();
             inAir = true;
         }
 
@@ -145,6 +148,8 @@ public class PlayerMovement : MonoBehaviour
             anim.SetTrigger("Jumping");
             chargejumpps.Stop();
             chargejumpps.Play();
+            audioSource.Stop();
+            audioSource.Play();
             inAir = true;
             chargingTime = 0;
         }
@@ -185,5 +190,7 @@ public class PlayerMovement : MonoBehaviour
     public void RespawnPlayer()
     {
         transform.position = spawnPosition;
+        dead.Stop();
+        dead.Play();
     }
 }
