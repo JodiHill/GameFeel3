@@ -5,7 +5,7 @@ using UnityEngine;
 public class Respawn : MonoBehaviour
 {
 
-    public Transform spawnPoint;
+    //public Transform spawnPoint;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +21,7 @@ public class Respawn : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        collision.transform.position = spawnPoint.position;
+        //collision.transform.position = spawnPoint.position;
+        collision.gameObject.GetComponent<PlayerMovement>().RespawnPlayer();
     }
 }

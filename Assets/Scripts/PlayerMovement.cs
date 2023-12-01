@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -26,11 +27,24 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
 
+    public ParticleSystem jumpps, landps, chargejumpps;
+
     private Animator anim;
+
+    public AnimationCurve jumpForce;
+    public float chargeTimeCheck = 2;
+
+    public GameObject canvas, canvasparticle;
+    public RawImage loader;
+    private Vector3 spawnPosition;
 
     private void Start()
     {
+        canvas.SetActive(false);
+        canvasparticle.SetActive(false);
+        loader.rectTransform.sizeDelta = new Vector2(0, 1);
         anim = GetComponent<Animator>();
+        spawnPosition = transform.position;
     }
     void Update()
     {
@@ -62,6 +76,8 @@ public class PlayerMovement : MonoBehaviour
 
             jumpBufferCounter = 0f;
 
+            jumpps.Stop();
+            jumpps.Play();
             anim.SetTrigger("Jumping");
             inAir = true;
         }
@@ -72,6 +88,9 @@ public class PlayerMovement : MonoBehaviour
             if (IsGrounded() && airTime > 0.1f)
             {
                 inAir = false;
+                landps.Stop();
+                landps.Play();
+                anim.ResetTrigger("Jumping");
                 anim.SetTrigger("Landing");
                 airTime = 0;
             }
@@ -89,6 +108,8 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftControl) && IsGrounded())
         {
             chargingTime += Time.deltaTime;
+            float power = Mathf.Clamp01(jumpForce.Evaluate(chargingTime / 2f));
+            loader.rectTransform.sizeDelta = new Vector2(power, 1);
         }
         
         if (chargingTime > 0f && horizontal != 0)
@@ -96,14 +117,35 @@ public class PlayerMovement : MonoBehaviour
             chargingTime = 0f;
         }
 
+        if (chargingTime > chargeTimeCheck)
+        {
+            chargingTime = chargeTimeCheck;
+            if (!canvasparticle.activeSelf)
+            {
+                canvasparticle.SetActive(true);
+            }
+        }
+        else
+        {
+            if (canvasparticle.activeSelf)
+            {
+                canvasparticle.SetActive(false);
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            canvas.SetActive(true);
+        }
+
         if (Input.GetKeyUp(KeyCode.LeftControl))
         {
-            if (chargingTime > 2)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, chargingPower);
-                anim.SetTrigger("Jumping");
-                inAir = true;
-            }
+            canvas.SetActive(false);
+            rb.velocity = new Vector2(rb.velocity.x, chargingPower * jumpForce.Evaluate(chargingTime / 2f));
+            anim.SetTrigger("Jumping");
+            chargejumpps.Stop();
+            chargejumpps.Play();
+            inAir = true;
             chargingTime = 0;
         }
 
@@ -129,5 +171,19 @@ public class PlayerMovement : MonoBehaviour
             localScale.x *= -1f;
             transform.localScale = localScale;
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Board"))
+        {
+            collision.gameObject.GetComponent<ParticlePlayer>().PlayParticle();
+            spawnPosition = collision.transform.position + Vector3.up;
+        }
+    }
+
+    public void RespawnPlayer()
+    {
+        transform.position = spawnPosition;
     }
 }
