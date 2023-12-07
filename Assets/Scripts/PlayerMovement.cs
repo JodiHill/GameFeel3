@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
 
     private float horizontal;
-    private float speed = 8f;
+    private float speed = 6f;
     private float jumpingPower = 16f;
     private bool isFacingRight = true;
     private bool inAir;
@@ -108,12 +108,12 @@ public class PlayerMovement : MonoBehaviour
 
         Flip();
 
-        if (Input.GetKey(KeyCode.LeftControl) && IsGrounded())
-        {
-            chargingTime += Time.deltaTime;
-            float power = Mathf.Clamp01(jumpForce.Evaluate(chargingTime / 2f));
-            loader.rectTransform.sizeDelta = new Vector2(power, 1);
-        }
+      //  if (Input.GetKey(KeyCode.LeftControl) && IsGrounded())
+      //  {
+      //      chargingTime += Time.deltaTime;
+      //      float power = Mathf.Clamp01(jumpForce.Evaluate(chargingTime / 2f));
+       //     loader.rectTransform.sizeDelta = new Vector2(power, 1);
+      //  }
         
         if (chargingTime > 0f && horizontal != 0)
         {
